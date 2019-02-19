@@ -1,15 +1,34 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
-tsize=9
+scale=7
+elevation=0.3
 
 function _init()
+   tsize=2^scale+1
    terrain={}
    for x=0,tsize-1 do
       terrain[x]={}
    end
    tile(0,0)
-   printh("success")
+   printh("terrain complete")
+end
+
+function _update()
+   --nothing
+end
+
+function _draw()
+   rectfill(0,0,127,127,0)
+   for x=0,tsize-1 do
+      for y=0,tsize-1 do
+         if terrain[x][y]>elevation then
+            pset(x,y,5)
+         else
+            pset(x,y,12)
+         end
+      end
+   end
 end
 
 function tile(x,y)
@@ -24,9 +43,9 @@ function tile(x,y)
 end
 
 function fill(x,y,size)
-   printh("fill: "..x.." "..y.." "..size)
+   --printh("fill: "..x.." "..y.." "..size)
    local s=flr(size/2)
-   printh("   s="..s)
+   --printh("   s="..s)
    square(x,y,x+s,y,size)
    square(x,y,x,y+s,size)
    square(x,y,x+s,y+s+s,size)
@@ -45,7 +64,7 @@ function fill(x,y,size)
 end
 
 function diamond(x,y,dx,dy,size)
-   printh("diamond: "..x.." "..y.." "..dx.." "..dy.." "..size)
+   --printh("diamond: "..x.." "..y.." "..dx.." "..dy.." "..size)
    local avg=(
             terrain[x][y]+
             terrain[x][y+size-1]+
@@ -57,10 +76,10 @@ function diamond(x,y,dx,dy,size)
 end
 
 function square(x,y,sx,sy,size)
-   printh("square: "..x.." "..y.." "..sx.." "..sy.." "..size)
+   --printh("square: "..x.." "..y.." "..sx.." "..sy.." "..size)
    local s=flr(size/2)
-   printh("   s="..s)
-   printh_terrain()
+   --printh("   s="..s)
+   --printh_terrain()
 
    local w1=wrap(x,y,sx+s,sy,size)
    local w2=wrap(x,y,sx-s,sy,size)
@@ -72,7 +91,7 @@ function square(x,y,sx,sy,size)
 end
 
 function wrap(x,y,wx,wy,size)
-   printh("wrap: "..x.." "..y.." "..wx.." "..wy.." "..size)
+   --printh("wrap: "..x.." "..y.." "..wx.." "..wy.." "..size)
    local t=size-1
    if wx>x and wx-t>x then
       wx=wx-t
@@ -86,27 +105,27 @@ function wrap(x,y,wx,wy,size)
    if wy<y then
       wy=wy+t
    end
-   printh("   wx="..wx.." wy="..wy)
-   printh("   =>"..terrain[wx][wy])
+   --printh("   wx="..wx.." wy="..wy)
+   --printh("   =>"..terrain[wx][wy])
    return terrain[wx][wy]
 end
 
 function corner(x,y)
-   printh("corner: "..x.." "..y)
+   --printh("corner: "..x.." "..y)
    srand(x*10000+y)
    terrain[x][y]=rnd(0.5)+0.25
 end
 
 function printh_terrain()
-   printh("terrain:\n")
+   --printh("terrain:\n")
    for x=0,tsize-1 do
       for y=0,tsize-1 do
          local t=terrain[x][y]
          if not t then
             t="nil"
          end
-         printh("x="..x.." y="..y.." "..t)
+         --printh("x="..x.." y="..y.." "..t)
       end
-      printh("")
+      --printh("")
    end
 end
