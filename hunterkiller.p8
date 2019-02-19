@@ -2,10 +2,17 @@ pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
 scale=7
-elevation=0.3
+elevation=0.5341
+salt=2
 
-cur_x=63
-cur_y=63
+function delta(size)
+   --return (rnd(0.5)-0.25)*(size/tsize)
+   return flr((rnd(0.1)-0.05)*100)/100
+   --return rnd(0.1)-0.05
+end
+
+cur_x=0
+cur_y=0
 
 function _init()
    tsize=2^scale+1
@@ -18,16 +25,17 @@ function _init()
 end
 
 function _update()
+   local m=2^scale
    if btnp(0) and cur_x>0 then
       cur_x-=1
    end
-   if btnp(1) and cur_x<127 then
+   if btnp(1) and cur_x<m then
       cur_x+=1
    end
    if btnp(2) and cur_y>0 then
       cur_y-=1
    end
-   if btnp(3) and cur_y<127 then
+   if btnp(3) and cur_y<m then
       cur_y+=1
    end
    if btnp(4) and elevation>0 then
@@ -50,7 +58,7 @@ function _draw()
       end
    end
    pset(cur_x,cur_y,8)
-   print(elevation.." "..terrain[cur_x][cur_y],0,0,8)
+   print(elevation.." "..terrain[cur_x][cur_y],0,120,8)
 end
 
 function tile(x,y)
@@ -107,9 +115,44 @@ function square(x,y,sx,sy,size)
    local w2=wrap(x,y,sx-s,sy,size)
    local w3=wrap(x,y,sx,sy+s,size)
    local w4=wrap(x,y,sx,sy-s,size)
-   local avg=(w1+w2+w3+w4)/4
+   local avg1=(w1+w2+w3+w4)/4
+
+   local count=0
+   local total=0
+   s1=maybe(sx+s,sy)
+   if s1 then
+      count+=1
+      total+=s1
+   end
+   s2=maybe(sx-s,sy)
+   if s2 then
+      count+=1
+      total+=s2
+   end
+   s3=maybe(sx,sy+s)
+   if s3 then
+      count+=1
+      total+=s3
+   end
+   s4=maybe(sx,sy-s)
+   if s4 then
+      count+=1
+      total+=s4
+   end
+   local avg2=total/count
+
    local d=delta(size)
-   terrain[sx][sy]=avg+d
+   terrain[sx][sy]=avg1+d
+end
+
+function maybe(x,y)
+   if x<0 or x>tsize-1 then
+      return nil
+   end
+   if y<0 or y>tsize-1 then
+      return nil
+   end
+   return terrain[x][y]
 end
 
 function wrap(x,y,wx,wy,size)
@@ -132,14 +175,11 @@ function wrap(x,y,wx,wy,size)
    return terrain[wx][wy]
 end
 
-function delta(size)
-   return(rnd(0.5)-0.25)*(size/tsize)
-end
-
 function corner(x,y)
    --printh("corner: "..x.." "..y)
-   srand(x*10000+y)
+   srand(x*10000+y+salt)
    terrain[x][y]=rnd(0.5)+0.25
+   --terrain[x][y]=0.5
 end
 
 function printh_terrain()
