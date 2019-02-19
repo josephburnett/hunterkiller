@@ -30,6 +30,12 @@ function _update()
    if btnp(3) and cur_y<127 then
       cur_y+=1
    end
+   if btnp(4) and elevation>0 then
+      elevation-=0.001
+   end
+   if btnp(5) and elevation<1 then
+      elevation+=0.001
+   end
 end
 
 function _draw()
@@ -44,7 +50,7 @@ function _draw()
       end
    end
    pset(cur_x,cur_y,8)
-   print(terrain[cur_x][cur_y],0,0,8)
+   print(elevation.." "..terrain[cur_x][cur_y],0,0,8)
 end
 
 function tile(x,y)
@@ -87,8 +93,8 @@ function diamond(x,y,dx,dy,size)
             terrain[x+size-1][y]+
             terrain[x+size-1][y+size-1]
          )/4
-   local delta=(rnd(0.5)-0.25)*(size/tsize)
-   terrain[dx][dy]=avg+delta
+   local d=delta(size)
+   terrain[dx][dy]=avg+d
 end
 
 function square(x,y,sx,sy,size)
@@ -102,8 +108,8 @@ function square(x,y,sx,sy,size)
    local w3=wrap(x,y,sx,sy+s,size)
    local w4=wrap(x,y,sx,sy-s,size)
    local avg=(w1+w2+w3+w4)/4
-   local delta=(rnd(0.5)-0.25)*(size/tsize)
-   terrain[sx][sy]=avg+delta
+   local d=delta(size)
+   terrain[sx][sy]=avg+d
 end
 
 function wrap(x,y,wx,wy,size)
@@ -124,6 +130,10 @@ function wrap(x,y,wx,wy,size)
    --printh("   wx="..wx.." wy="..wy)
    --printh("   =>"..terrain[wx][wy])
    return terrain[wx][wy]
+end
+
+function delta(size)
+   return(rnd(0.5)-0.25)*(size/tsize)
 end
 
 function corner(x,y)
