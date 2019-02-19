@@ -3,7 +3,8 @@ version 16
 __lua__
 scale=7
 elevation=0.5341
-salt=2
+salt=4
+worldsize=2
 
 function delta(size)
    --return (rnd(0.5)-0.25)*(size/tsize)
@@ -11,31 +12,36 @@ function delta(size)
    --return rnd(0.1)-0.05
 end
 
-cur_x=0
-cur_y=0
+cur_x=64
+cur_y=64
 
 function _init()
    tsize=2^scale+1
    terrain={}
-   for x=0,tsize-1 do
+   for x=0,tsize*worldsize do
       terrain[x]={}
    end
-   tile(0,0)
+   for x=0,worldsize-1 do
+      for y=0, worldsize-1 do
+         tile(x*tsize,y*tsize)
+      end
+   end
    printh("terrain complete")
 end
 
 function _update()
-   local m=2^scale
-   if btnp(0) and cur_x>0 then
+   local lower=tsize/2+1
+   local upper=tsize*worldsize-tsize
+   if btnp(0) and cur_x>lower then
       cur_x-=1
    end
-   if btnp(1) and cur_x<m then
+   if btnp(1) and cur_x<upper then
       cur_x+=1
    end
-   if btnp(2) and cur_y>0 then
+   if btnp(2) and cur_y>lower then
       cur_y-=1
    end
-   if btnp(3) and cur_y<m then
+   if btnp(3) and cur_y<upper then
       cur_y+=1
    end
    if btnp(4) and elevation>0 then
@@ -48,17 +54,20 @@ end
 
 function _draw()
    rectfill(0,0,127,127,0)
-   for x=0,tsize-1 do
-      for y=0,tsize-1 do
-         if terrain[x][y]>elevation then
+   local s=tsize/2
+   for x=0,127 do
+      for y=0,127 do
+         local tx=cur_x+x
+         local ty=cur_y+y
+         if terrain[tx][ty]>elevation then
             pset(x,y,5)
          else
             pset(x,y,12)
          end
       end
    end
-   pset(cur_x,cur_y,8)
-   print(elevation.." "..terrain[cur_x][cur_y],0,120,8)
+   pset(tsize/2+1,tsize/2+1,8)
+   print(elevation.." "..cur_x.." "..cur_y,3,120,8)
 end
 
 function tile(x,y)
@@ -178,8 +187,8 @@ end
 function corner(x,y)
    --printh("corner: "..x.." "..y)
    srand(x*10000+y+salt)
-   terrain[x][y]=rnd(0.5)+0.25
-   --terrain[x][y]=0.5
+   --terrain[x][y]=rnd(0.5)+0.25
+   terrain[x][y]=0.5
 end
 
 function printh_terrain()
