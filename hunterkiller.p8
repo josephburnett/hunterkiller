@@ -1,34 +1,46 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
-tsize=3
+tsize=9
 
 function _init()
    terrain={}
    for x=0,tsize-1 do
       terrain[x]={}
    end
-   corner(0,0)
-   corner(0,tsize-1)
-   corner(tsize-1,0)
-   corner(tsize-1,tsize-1)
-   fill(0,0,tsize)
+   tile(0,0)
+   printh("success")
+end
+
+function tile(x,y)
+   local t=tsize-1
+   corner(x,y)
+   corner(x,y+t)
+   corner(x+t,y)
+   corner(x+t,y+t)
+   local s=flr(tsize/2)
+   diamond(x,y,x+s,y+s,tsize)
+   fill(x,y,tsize)
 end
 
 function fill(x,y,size)
    printh("fill: "..x.." "..y.." "..size)
    local s=flr(size/2)
    printh("   s="..s)
-   diamond(x,y,x+s,y+s,size)
    square(x,y,x+s,y,size)
    square(x,y,x,y+s,size)
    square(x,y,x+s,y+s+s,size)
    square(x,y,x+s+s,y+s,size)
    if size>3 then
-      fill(x,y,s)
-      fill(x+s,y,s)
-      fill(x,y+s,s)
-      fill(x+s,y+s,s)
+      local t=flr(s/2)
+      diamond(x,y,x+t,y+t,s+1)
+      diamond(x,y,x+t+s,y+t,s+1)
+      diamond(x,y,x+t,y+t+s,s+1)
+      diamond(x,y,x+t+s,y+t+s,s+1)
+      fill(x,y,s+1)
+      fill(x+s,y,s+1)
+      fill(x,y+s,s+1)
+      fill(x+s,y+s,s+1)
    end
 end
 
@@ -61,7 +73,7 @@ end
 
 function wrap(x,y,wx,wy,size)
    printh("wrap: "..x.." "..y.." "..wx.." "..wy.." "..size)
-   local t=tsize-1
+   local t=size-1
    if wx>x and wx-t>x then
       wx=wx-t
    end
