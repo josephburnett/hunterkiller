@@ -4,6 +4,9 @@ __lua__
 scale=7
 elevation=0.3
 
+cur_x=63
+cur_y=63
+
 function _init()
    tsize=2^scale+1
    terrain={}
@@ -15,7 +18,18 @@ function _init()
 end
 
 function _update()
-   --nothing
+   if btnp(0) and cur_x>0 then
+      cur_x-=1
+   end
+   if btnp(1) and cur_x<127 then
+      cur_x+=1
+   end
+   if btnp(2) and cur_y>0 then
+      cur_y-=1
+   end
+   if btnp(3) and cur_y<127 then
+      cur_y+=1
+   end
 end
 
 function _draw()
@@ -29,6 +43,8 @@ function _draw()
          end
       end
    end
+   pset(cur_x,cur_y,8)
+   print(terrain[cur_x][cur_y],0,0,8)
 end
 
 function tile(x,y)
