@@ -139,5 +139,11 @@ function corner(t,x,y)
 end
 
 function delta(size)
-   return flr((rnd(0.1)-0.05)*100)/100
+   --return flr((rnd(0.1)-0.05)*100)/100
+   --return rnd(0.5)-0.25*(size/tsize*10)
+   local max_delta=0.75
+   if size<tsize/8 then
+      max_delta=0.25
+   end
+   return rnd(max_delta*2)-max_delta
 end
