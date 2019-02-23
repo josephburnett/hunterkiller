@@ -1,17 +1,20 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
-scale=7
+tile_size=2
+tile_count=3
 elevation=0.5000
 salt=4
 
-cur_x=64
-cur_y=64
+cur_x=0
+cur_y=0
 
 function _init()
-   tsize=2^scale+1
-   terrain=tile(0,0)
+   tsize=2^tile_size+1
+   printh("tsize="..tsize)
+   terrain=tile(0,0,tile_count)
    printh("terrain complete")
+   printh_terrain(terrain)
 end
 
 function _update()
@@ -39,8 +42,8 @@ end
 
 function _draw()
    rectfill(0,0,127,127,0)
-   for x=0,tsize-1 do
-      for y=0,tsize-1 do
+   for x=0,(tsize-1)*tile_count do
+      for y=0,(tsize-1)*tile_count do
          if terrain[x][y]>elevation then
             pset(x,y,5)
          else
@@ -52,30 +55,33 @@ function _draw()
    print(elevation.." "..cur_x.." "..cur_y.." "..terrain[cur_x][cur_y],3,120,8)
 end
 
-function tile(x,y)
+function tile(x,y,cnt)
+   printh("tile "..x.." "..y.." "..cnt)
+   local step=tsize-1
    local t={}
-   for tx=0,tsize-1 do
+   for tx=0,step*cnt do
       t[tx]={}
    end
-   corner(t,x,y)
-   corner(t,x,y+tsize-1)
-   corner(t,x+tsize-1,y)
-   corner(t,x+tsize-1,y+tsize-1)
+   for cx=0,step*cnt-1,step do
+      for cy=0,step*cnt-1,step do
+         corner(t,x+cx,y+cy)
+      end
+   end
    local size=tsize
    while size>=3 do
       local half=flr(size/2)
-      for dx=half,tsize-1,size-1 do
-         for dy=half,tsize-1,size-1 do
+      for dx=half,step*cnt-1,size-1 do
+         for dy=half,step*cnt-1,size-1 do
             diamond(t,x,y,x+dx,y+dy,size)
          end
       end
-      for sx=half,tsize-1,size-1 do
-         for sy=half,tsize-1,size-1 do
+      for sx=half,step*cnt-1,size-1 do
+         for sy=half,step*cnt-1,size-1 do
             square(t,x,y,sx+half,sy,size)
             square(t,x,y,sx,sy+half,size)
             square(t,x,y,sx-half,sy,size)
             square(t,x,y,sx,sy-half,size)
-          end
+         end
       end
       size=half+1
    end
@@ -83,6 +89,7 @@ function tile(x,y)
 end
 
 function diamond(t,x,y,dx,dy,size)
+   printh("diamond "..x.." "..y.." "..dx.." "..dy.." "..size)
    local avg=(
             t[x][y]+
             t[x][y+size-1]+
@@ -133,6 +140,7 @@ function maybe(t,x,y)
 end
 
 function corner(t,x,y)
+   printh("corner "..x.." "..y)
    srand(x*10000+y+salt)
    --t[x][y]=rnd(0.5)+0.25
    t[x][y]=0.5
@@ -146,4 +154,19 @@ function delta(size)
       max_delta=0.25
    end
    return rnd(max_delta*2)-max_delta
+end
+
+function printh_terrain()
+   printh("terrain:\n")
+   local step=tsize-1
+   for x=0,step*tile_count do
+      for y=0,step*tile_count do
+         local t=terrain[x][y]
+         if not t then
+            t="nil"
+         end
+         printh("x="..x.." y="..y.." "..t)
+      end
+      printh("")
+   end
 end
