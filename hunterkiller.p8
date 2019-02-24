@@ -1,9 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
-tile_size=6
-tile_count=2
-elevation=0.5000
+tile_size=5
+tile_count=4
+elevation=0.370
 salt=0
 
 cur_x=0
@@ -71,27 +71,29 @@ function tile(x,y,cnt)
       end
    end
    local size=tsize
+   local i=0
    while size>=3 do
       local half=flr(size/2)
       for dx=half,step*cnt-1,size-1 do
          for dy=half,step*cnt-1,size-1 do
-            diamond(t,x,y,x+dx,y+dy,size)
+            diamond(t,x,y,x+dx,y+dy,size,i)
          end
       end
       for sx=half,step*cnt-1,size-1 do
          for sy=half,step*cnt-1,size-1 do
-            square(t,x,y,x+sx+half,y+sy,size,cnt)
-            square(t,x,y,x+sx,y+sy+half,size,cnt)
-            square(t,x,y,x+sx-half,y+sy,size,cnt)
-            square(t,x,y,x+sx,y+sy-half,size,cnt)
+            square(t,x,y,x+sx+half,y+sy,size,cnt,i)
+            square(t,x,y,x+sx,y+sy+half,size,cnt,i)
+            square(t,x,y,x+sx-half,y+sy,size,cnt,i)
+            square(t,x,y,x+sx,y+sy-half,size,cnt,i)
          end
       end
       size=half+1
+      i+=1
    end
    return t
 end
 
-function diamond(t,x,y,dx,dy,size)
+function diamond(t,x,y,dx,dy,size,i)
    --printh("diamond "..x.." "..y.." "..dx.." "..dy.." "..size)
    local avg=(
             t[x][y]+
@@ -99,11 +101,11 @@ function diamond(t,x,y,dx,dy,size)
             t[x+size-1][y]+
             t[x+size-1][y+size-1]
          )/4
-   local d=delta(size)
+   local d=delta(size,i)
    t[dx][dy]=avg+d
 end
 
-function square(t,x,y,sx,sy,size,cnt)
+function square(t,x,y,sx,sy,size,cnt,i)
    local half=flr(size/2)
    local count=0
    local total=0
@@ -128,7 +130,7 @@ function square(t,x,y,sx,sy,size,cnt)
       total+=s4
    end
    local avg=total/count
-   local d=delta(size)
+   local d=delta(size,i)
    t[sx][sy]=avg+d
 end
 
@@ -149,14 +151,16 @@ function corner(t,x,y)
    --t[x][y]=0.5
 end
 
-function delta(size)
+function delta(size,i)
    --return flr((rnd(0.1)-0.05)*100)/100
-   return rnd(0.5)-0.25
+   --return rnd(0.5)-0.25
    --local max_delta=0.75
    --if size<tsize/8 then
    --   max_delta=0.25
    --end
    --return rnd(max_delta*2)-max_delta
+   local max_delta=0.5/(i+1)
+   return rnd(max_delta*2)-max_delta
 end
 
 function printh_terrain()
