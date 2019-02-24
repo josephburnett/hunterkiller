@@ -3,7 +3,8 @@ version 16
 __lua__
 tile_size=5
 tile_count=4
-elevation=0.370
+elevation=0.380
+thickness=2
 salt=0
 
 cur_x=0
@@ -16,6 +17,7 @@ function _init()
    tsize=2^tile_size+1
    --printh("tsize="..tsize)
    terrain=tile(0,0,tile_count)
+   p=plane(terrain,tile_count,elevation)
    printh("terrain complete")
    --printh_terrain(terrain)
 end
@@ -37,9 +39,11 @@ function _update()
    end
    if btnp(4) and elevation>0 then
       elevation-=0.001
+      p=plane(terrain,tile_count,elevation)
    end
    if btnp(5) and elevation<1 then
       elevation+=0.001
+      p=plane(terrain,tile_count,elevation)
    end
 end
 
@@ -47,7 +51,7 @@ function _draw()
    rectfill(0,0,127,127,0)
    for x=0,(tsize-1)*tile_count do
       for y=0,(tsize-1)*tile_count do
-         if terrain[x][y]>elevation then
+         if p[x][y] then
             pset(x,y,5)
          else
             pset(x,y,12)
@@ -161,6 +165,72 @@ function delta(size,i)
    --return rnd(max_delta*2)-max_delta
    local max_delta=0.5/(i+1)
    return rnd(max_delta*2)-max_delta
+end
+
+function plane(t,cnt,elev)
+   local step=tsize-1
+   local p={}
+   for x=0,step*cnt do
+      p[x]={}
+      for y=0,step*cnt do
+         if t[x][y]>elev then
+            p[x][y]=true
+         else
+            p[x][y]=false
+         end
+      end
+   end
+   despeckle(p)
+   for i=1,thickness do
+      thicken(p,cnt)
+   end
+   return p
+end
+
+function despeckle(p)
+   local step=tsize-1
+   for x=0,step*tile_count do
+      for y=0,step*tile_count do
+         if p[x][y] then
+            local p1=maybe(p,x+1,y,tile_count)
+            local p2=maybe(p,x,y+1,tile_count)
+            local p3=maybe(p,x-1,y,tile_count)
+            local p4=maybe(p,x,y-1,tile_count)
+            if not p1 and not p2 and
+               not p3 and not p4 then
+               p[x][y]=false
+            end
+         end
+      end
+   end
+end
+
+function thicken(p,cnt)
+   local step=tsize-1
+   for x=0,step*cnt do
+      for y=0,step*cnt do
+         if p[x][y] then
+            if maybe(p,x-1,y,tile_count)!=nil then
+               p[x-1][y]=true
+            end
+            if maybe(p,x,y-1,tile_count)!=nil then
+               p[x][y-1]=true
+            end
+         end
+      end
+   end
+   for x=step*cnt,0,-1 do
+      for y=step*cnt,0,-1 do
+         if p[x][y] then
+            if maybe(p,x+1,y,tile_count)!=nil then
+               p[x+1][y]=true
+            end
+            if maybe(p,x,y+1,tile_count)!=nil then
+               p[x][y+1]=true
+            end
+         end
+      end
+   end
 end
 
 function printh_terrain()
