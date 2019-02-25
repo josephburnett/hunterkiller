@@ -1,11 +1,11 @@
 pico-8 cartridge // http://www.pico-8.com
-version 16
+version 10
 __lua__
-tile_size=5
-tile_count=4
-elevation=0.380
+tile_size=4
+tile_count=8
+elevation=0.76
 thickness=2
-salt=0
+salt=2
 
 cur_x=0
 cur_y=0
@@ -151,7 +151,7 @@ end
 function corner(t,x,y)
    --printh("corner "..x.." "..y)
    srand(x*10000+y+salt)
-   t[x][y]=rnd(0.5)+0.25
+   t[x][y]=rnd(1)
    --t[x][y]=0.5
 end
 
@@ -206,27 +206,28 @@ function despeckle(p)
 end
 
 function thicken(p,cnt)
+   local temp={}
    local step=tsize-1
    for x=0,step*cnt do
+      temp[x]={}
       for y=0,step*cnt do
-         if p[x][y] then
-            if maybe(p,x-1,y,tile_count)!=nil then
-               p[x-1][y]=true
-            end
-            if maybe(p,x,y-1,tile_count)!=nil then
-               p[x][y-1]=true
-            end
-         end
+         temp[x][y]=p[x][y]
       end
    end
    for x=step*cnt,0,-1 do
       for y=step*cnt,0,-1 do
-         if p[x][y] then
-            if maybe(p,x+1,y,tile_count)!=nil then
+         if temp[x][y] then
+            if maybe(temp,x+1,y,tile_count)!=nil then
                p[x+1][y]=true
             end
-            if maybe(p,x,y+1,tile_count)!=nil then
+            if maybe(temp,x,y+1,tile_count)!=nil then
                p[x][y+1]=true
+            end
+            if maybe(temp,x-1,y,tile_count)!=nil then
+               p[x-1][y]=true
+            end
+            if maybe(temp,x,y-1,tile_count)!=nil then
+               p[x][y-1]=true
             end
          end
       end
