@@ -1,14 +1,24 @@
 pico-8 cartridge // http://www.pico-8.com
 version 10
 __lua__
+play=true
+
+--terrain
 tile_size=4
 tile_count=8
 elevation=0.76
 thickness=2
 salt=2
 
+--explore
 cur_x=0
 cur_y=0
+
+--play
+pos_x=40
+pos_y=50
+velosity=0
+heading=0
 
 function _init()
    for i=0,100 do
@@ -23,6 +33,64 @@ function _init()
 end
 
 function _update()
+   if play then
+      update_play()
+   else
+      update_explore()
+   end
+end
+
+function _draw()
+   if play then
+      draw_play()
+   else
+      draw_explore()
+   end
+end
+
+function update_play()
+   local dx=velosity*cos(heading)
+   local dy=velosity*sin(heading)
+   local x=flr(pos_x+dx)
+   local y=flr(pos_y+dy)
+   if maybe(p,x,y,tile_count) then
+      velosity=0
+      return
+   end
+   pos_x+=dx
+   pos_y+=dy
+   if btn(0) then
+      heading+=.002
+   end
+   if btn(1) then
+      heading-=.002
+   end
+   if btn(2) then
+      velosity+=0.002
+   end
+   if btn(3) then
+      velosity-=0.002
+   end
+   if velosity<0 then
+      velosity=0
+   end
+end
+
+function draw_play()
+   draw_terrain()
+   print("velosity: "..velosity.." heading: "..heading,3,120,8)
+   local dx=cos(heading)
+   local dy=sin(heading)
+   local vx=dx*velosity*100
+   local vy=dy*velosity*100
+   local hx=vx+dx*200
+   local hy=vy+dy*200
+   line(pos_x,pos_y,pos_x+vx,pos_y+vy,13)
+   line(pos_x+vx,pos_y+vy,pos_x+hx,pos_y+hy,6)
+   circfill(pos_x,pos_y,1,10)
+end
+
+function update_explore()
    local lower=0
    local upper=(tsize-1)*tile_count
    if btnp(0) and cur_x>lower then
@@ -47,7 +115,12 @@ function _update()
    end
 end
 
-function _draw()
+function draw_explore()
+   draw_terrain()
+   print(elevation.." "..cur_x.." "..cur_y.." "..terrain[cur_x][cur_y],3,120,8)
+end
+
+function draw_terrain()
    rectfill(0,0,127,127,0)
    for x=0,(tsize-1)*tile_count do
       for y=0,(tsize-1)*tile_count do
@@ -59,7 +132,6 @@ function _draw()
       end
    end
    pset(cur_x,cur_y,8)
-   print(elevation.." "..cur_x.." "..cur_y.." "..terrain[cur_x][cur_y],3,120,8)
 end
 
 function tile(x,y,cnt)
