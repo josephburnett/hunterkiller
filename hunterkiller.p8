@@ -22,6 +22,7 @@ heading=0
 ping_state=0
 ping_x=0
 ping_y=0
+ping_term={}
 chart={}
 
 function _init()
@@ -97,8 +98,8 @@ function draw_play()
    print("velosity: "..velosity.." heading: "..heading,3,120,8)
    local dx=cos(heading)
    local dy=sin(heading)
-   local vx=dx*velosity*1000
-   local vy=dy*velosity*1000
+   local vx=dx*velosity*500
+   local vy=dy*velosity*500
    local hx=vx+dx*200
    local hy=vy+dy*200
    line(pos_x,pos_y,pos_x+vx,pos_y+vy,13)
@@ -110,13 +111,13 @@ function draw_play()
 end
 
 function draw_chart()
-   rectfill(0,0,127,127,0)
+   rectfill(0,0,127,127,5)
    for x=0,(tsize-1)*tile_count do
       for y=0,(tsize-1)*tile_count do
          if maybe(chart,x,y,tile_count)=="water" then
             pset(x,y,12)
          elseif maybe(chart,x,y,tile_count)=="land" then
-            pset(x,y,5)
+            pset(x,y,0)
          end
       end
    end
@@ -167,19 +168,23 @@ function ping()
       ping_state=1
       ping_x=pos_x
       ping_y=pos_y
+      ping_term={}
    else
       for i=0,1,0.01 do
-         local x=flr(ping_x+ping_state*cos(i))
-         local y=flr(ping_y+ping_state*sin(i))
-         if maybe(p,x,y,tile_count) then
-            set_chart(x,y,"land")
-         else
-            set_chart(x,y,"water")
+         if not ping_term[i] then
+            local x=flr(ping_x+ping_state*cos(i))
+            local y=flr(ping_y+ping_state*sin(i))
+            if maybe(p,x,y,tile_count) then
+               set_chart(x,y,"land")
+               ping_term[i]=true
+            else
+               set_chart(x,y,"water")
+            end
          end
       end
       ping_state+=1
    end
-   if ping_state==20 then
+   if ping_state==30 then
       ping_state=0
    end
 end
