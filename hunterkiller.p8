@@ -4,11 +4,12 @@ __lua__
 play=true
 
 --terrain
-tile_size=4
-tile_count=8
-elevation=0.76
+tile_size=5
+tile_count=4
+max_delta=0.3
+elevation=0.5298
 thickness=2
-salt=2
+salt=6
 
 --explore
 cur_x=0
@@ -16,8 +17,8 @@ cur_y=0
 
 --play
 mode="nav"
-pos_x=40
-pos_y=50
+pos_x=55
+pos_y=90
 velosity=0
 heading=0
 ping_state=0
@@ -347,7 +348,7 @@ end
 
 function corner(t,x,y)
    --printh("corner "..x.." "..y)
-   srand(x*10000+y+salt)
+   srand(x*y*salt)
    t[x][y]=rnd(1)
    --t[x][y]=0.5
 end
@@ -360,8 +361,8 @@ function delta(size,i)
    --   max_delta=0.25
    --end
    --return rnd(max_delta*2)-max_delta
-   local max_delta=0.5/(i+1)
-   return rnd(max_delta*2)-max_delta
+   local md=max_delta/(i+1)
+   return rnd(md*2)-md
 end
 
 function plane(t,cnt,elev)
