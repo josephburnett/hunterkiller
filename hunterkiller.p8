@@ -4,6 +4,8 @@ __lua__
 play=true
 
 --terrain
+terrain={}
+tdone{}
 tsize=2^5+1
 tcount=4
 max_delta=0.3
@@ -262,7 +264,41 @@ function set_chart(x,y,what)
    chart[x][y]=what
 end
 
-function tile(x,y)
+function gen_terrain()
+   local tactual=(tsize-1)*(tcount-2)
+   local tx=flr(pos_x/tactual)*tactual
+   local ty=flr(pos_y/tactual)*tactual
+   --generate surrounding tiles
+end
+
+function gen_tile(x,y)
+   local dx=tdone[x]
+   if dx==nil then
+      dx={}
+      tdone[x]=dx
+   end
+   if dx[y] then
+      return
+   end
+   local step=tsize-1
+   local t=tile_with_waste(x-step,y-step)
+   local p=plane(t,elevation)
+   local tactual=step*(tcount-2)
+   for px=x,x+tactual do
+      for py=y,y+tactual do
+         local tx=terrain[px]
+         if tx==nil then
+            tx={}
+            terrain[px]=tx
+         end
+         tx[py]=p[px][py]
+      end
+   end
+   local dx=tdone[x]
+   dx[y]=true
+end
+
+function tile_with_waste(x,y)
    local step=tsize-1
    local t={}
    for tx=0,step*tcount do
