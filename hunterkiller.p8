@@ -30,15 +30,9 @@ torps={}
 torp_count=0
 
 function _init()
-   for i=0,100 do
-      printh("")
-   end
    tsize=2^tile_size+1
-   --printh("tsize="..tsize)
    terrain=tile(0,0,tile_count)
    p=plane(terrain,tile_count,elevation)
-   printh("terrain complete")
-   --printh_terrain(terrain)
 end
 
 function _update()
@@ -58,21 +52,17 @@ function _draw()
 end
 
 function update_play()
+   handle_buttons()
+   update_pos()
+   update_torps()
+end
+
+function handle_buttons()
    if (btnp(4) and mode=="nav") or ping_state!=0 then
       ping()
    elseif btnp(4) and mode=="torp" then
       fire()
    end
-   local dx=velosity*cos(heading)
-   local dy=velosity*sin(heading)
-   local x=flr(pos_x+dx)
-   local y=flr(pos_y+dy)
-   if maybe(p,x,y,tile_count) then
-      velosity=0
-      return
-   end
-   pos_x+=dx
-   pos_y+=dy
    if btn(0) then
       heading+=.002
    end
@@ -104,7 +94,19 @@ function update_play()
          mode="nav"
       end
    end
-   update_torps()
+end
+
+function update_pos()
+   local dx=velosity*cos(heading)
+   local dy=velosity*sin(heading)
+   local x=flr(pos_x+dx)
+   local y=flr(pos_y+dy)
+   if maybe(p,x,y,tile_count) then
+      velosity=0
+      return
+   end
+   pos_x+=dx
+   pos_y+=dy
 end
 
 function fire()
@@ -137,20 +139,24 @@ end
 
 function draw_play()
    draw_chart()
-   print("velosity: "..velosity.." heading: "..heading,3,120,8)
-   if mode=="nav" then
-      draw_nav()
-   elseif mode=="torp" then
-      draw_torp()
-   end
+   draw_hud()
    draw_torps()
    circfill(pos_x,pos_y,1,10)
+end
+
+function draw_hud()
+   print("velosity: "..velosity.." heading: "..heading,3,120,8)
    if ping_state!=0 then
       circ(ping_x,ping_y,ping_state-0.5,8)
    end
+   if mode=="nav" then
+      draw_nav_hud()
+   elseif mode=="torp" then
+      draw_torp_hud()
+   end
 end
 
-function draw_nav()
+function draw_nav_hud()
    local dx=cos(heading)
    local dy=sin(heading)
    local vx=dx*velosity*500
@@ -162,7 +168,7 @@ function draw_nav()
    line(pos_x+vx,pos_y+vy,pos_x+hx,pos_y+hy,6)
 end
 
-function draw_torp()
+function draw_torp_hud()
    x1=cos(heading+0.05)*200
    y1=sin(heading+0.05)*200
    x2=cos(heading-0.05)*200
@@ -258,7 +264,6 @@ function set_chart(x,y,what)
 end
 
 function tile(x,y,cnt)
-   --printh("tile "..x.." "..y.." "..cnt)
    local step=tsize-1
    local t={}
    for tx=0,step*cnt do
@@ -293,7 +298,6 @@ function tile(x,y,cnt)
 end
 
 function diamond(t,x,y,dx,dy,size,i)
-   --printh("diamond "..x.." "..y.." "..dx.." "..dy.." "..size)
    local avg=(
             t[x][y]+
             t[x][y+size-1]+
@@ -347,20 +351,11 @@ function maybe(t,x,y,cnt)
 end
 
 function corner(t,x,y)
-   --printh("corner "..x.." "..y)
    srand(x*y*salt)
    t[x][y]=rnd(1)
-   --t[x][y]=0.5
 end
 
 function delta(size,i)
-   --return flr((rnd(0.1)-0.05)*100)/100
-   --return rnd(0.5)-0.25
-   --local max_delta=0.75
-   --if size<tsize/8 then
-   --   max_delta=0.25
-   --end
-   --return rnd(max_delta*2)-max_delta
    local md=max_delta/(i+1)
    return rnd(md*2)-md
 end
@@ -433,7 +428,6 @@ function thicken(p,cnt)
 end
 
 function printh_terrain()
-   --printh("terrain:\n")
    local step=tsize-1
    for x=0,step*tile_count do
       for y=0,step*tile_count do
