@@ -4,8 +4,8 @@ __lua__
 play=true
 
 --terrain
-tile_size=5
-tile_count=4
+tsize=2^5+1
+tcount=4
 max_delta=0.3
 elevation=0.5298
 thickness=2
@@ -30,9 +30,8 @@ torps={}
 torp_count=0
 
 function _init()
-   tsize=2^tile_size+1
-   terrain=tile(0,0,tile_count)
-   p=plane(terrain,tile_count,elevation)
+   terrain=tile(0,0)
+   p=plane(terrain,elevation)
 end
 
 function _update()
@@ -101,7 +100,7 @@ function update_pos()
    local dy=velosity*sin(heading)
    local x=flr(pos_x+dx)
    local y=flr(pos_y+dy)
-   if maybe(p,x,y,tile_count) then
+   if maybe(p,x,y,tcount) then
       velosity=0
       return
    end
@@ -122,7 +121,7 @@ function update_torps()
    for k,v in pairs(torps) do
       x=v.x+cos(v.h)*0.1
       y=v.y+sin(v.h)*0.1
-      if maybe(p,flr(x),flr(y),tile_count) then
+      if maybe(p,flr(x),flr(y),tcount) then
          torps[k]=nil
       else
          v.x=x
@@ -179,11 +178,11 @@ end
 
 function draw_chart()
    rectfill(0,0,127,127,5)
-   for x=0,(tsize-1)*tile_count do
-      for y=0,(tsize-1)*tile_count do
-         if maybe(chart,x,y,tile_count)=="water" then
+   for x=0,(tsize-1)*tcount do
+      for y=0,(tsize-1)*tcount do
+         if maybe(chart,x,y,tcount)=="water" then
             pset(x,y,12)
-         elseif maybe(chart,x,y,tile_count)=="land" then
+         elseif maybe(chart,x,y,tcount)=="land" then
             pset(x,y,0)
          end
       end
@@ -192,7 +191,7 @@ end
 
 function update_explore()
    local lower=0
-   local upper=(tsize-1)*tile_count
+   local upper=(tsize-1)*tcount
    if btnp(0) and cur_x>lower then
       cur_x-=1
    end
@@ -207,18 +206,18 @@ function update_explore()
    end
    if btnp(4) and elevation>0 then
       elevation-=0.001
-      p=plane(terrain,tile_count,elevation)
+      p=plane(terrain,tcount,elevation)
    end
    if btnp(5) and elevation<1 then
       elevation+=0.001
-      p=plane(terrain,tile_count,elevation)
+      p=plane(terrain,tcount,elevation)
    end
 end
 
 function draw_explore()
    rectfill(0,0,127,127,0)
-   for x=0,(tsize-1)*tile_count do
-      for y=0,(tsize-1)*tile_count do
+   for x=0,(tsize-1)*tcount do
+      for y=0,(tsize-1)*tcount do
          if p[x][y] then
             pset(x,y,5)
          else
@@ -241,7 +240,7 @@ function ping()
          if not ping_term[i] then
             local x=flr(ping_x+ping_state*cos(i))
             local y=flr(ping_y+ping_state*sin(i))
-            if maybe(p,x,y,tile_count) then
+            if maybe(p,x,y,tcount) then
                set_chart(x,y,"land")
                ping_term[i]=true
             else
@@ -263,14 +262,14 @@ function set_chart(x,y,what)
    chart[x][y]=what
 end
 
-function tile(x,y,cnt)
+function tile(x,y)
    local step=tsize-1
    local t={}
-   for tx=0,step*cnt do
+   for tx=0,step*tcount do
       t[tx]={}
    end
-   for cx=0,step*cnt,step do
-      for cy=0,step*cnt,step do
+   for cx=0,step*tcount,step do
+      for cy=0,step*tcount,step do
          corner(t,x+cx,y+cy)
       end
    end
@@ -278,17 +277,17 @@ function tile(x,y,cnt)
    local i=0
    while size>=3 do
       local half=flr(size/2)
-      for dx=half,step*cnt-1,size-1 do
-         for dy=half,step*cnt-1,size-1 do
+      for dx=half,step*tcount-1,size-1 do
+         for dy=half,step*tcount-1,size-1 do
             diamond(t,x,y,x+dx,y+dy,size,i)
          end
       end
-      for sx=half,step*cnt-1,size-1 do
-         for sy=half,step*cnt-1,size-1 do
-            square(t,x,y,x+sx+half,y+sy,size,cnt,i)
-            square(t,x,y,x+sx,y+sy+half,size,cnt,i)
-            square(t,x,y,x+sx-half,y+sy,size,cnt,i)
-            square(t,x,y,x+sx,y+sy-half,size,cnt,i)
+      for sx=half,step*tcount-1,size-1 do
+         for sy=half,step*tcount-1,size-1 do
+            square(t,x,y,x+sx+half,y+sy,size,i)
+            square(t,x,y,x+sx,y+sy+half,size,i)
+            square(t,x,y,x+sx-half,y+sy,size,i)
+            square(t,x,y,x+sx,y+sy-half,size,i)
          end
       end
       size=half+1
@@ -308,26 +307,26 @@ function diamond(t,x,y,dx,dy,size,i)
    t[dx][dy]=avg+d
 end
 
-function square(t,x,y,sx,sy,size,cnt,i)
+function square(t,x,y,sx,sy,size,i)
    local half=flr(size/2)
    local count=0
    local total=0
-   s1=maybe(t,sx+half,sy,cnt)
+   s1=maybe(t,sx+half,sy)
    if s1 then
       count+=1
       total+=s1
    end
-   s2=maybe(t,sx-half,sy,cnt)
+   s2=maybe(t,sx-half,sy)
    if s2 then
       count+=1
       total+=s2
    end
-   s3=maybe(t,sx,sy+half,cnt)
+   s3=maybe(t,sx,sy+half)
    if s3 then
       count+=1
       total+=s3
    end
-   s4=maybe(t,sx,sy-half,cnt)
+   s4=maybe(t,sx,sy-half)
    if s4 then
       count+=1
       total+=s4
@@ -337,11 +336,11 @@ function square(t,x,y,sx,sy,size,cnt,i)
    t[sx][sy]=avg+d
 end
 
-function maybe(t,x,y,cnt)
-   if x<0 or x>(tsize-1)*cnt then
+function maybe(t,x,y)
+   if x<0 or x>(tsize-1)*tcount then
       return nil
    end
-   if y<0 or y>(tsize-1)*cnt then
+   if y<0 or y>(tsize-1)*tcount then
       return nil
    end
    if t[x]==nil then
@@ -360,12 +359,12 @@ function delta(size,i)
    return rnd(md*2)-md
 end
 
-function plane(t,cnt,elev)
+function plane(t,elev)
    local step=tsize-1
    local p={}
-   for x=0,step*cnt do
+   for x=0,step*tcount do
       p[x]={}
-      for y=0,step*cnt do
+      for y=0,step*tcount do
          if t[x][y]>elev then
             p[x][y]=true
          else
@@ -375,20 +374,20 @@ function plane(t,cnt,elev)
    end
    despeckle(p)
    for i=1,thickness do
-      thicken(p,cnt)
+      thicken(p)
    end
    return p
 end
 
 function despeckle(p)
    local step=tsize-1
-   for x=0,step*tile_count do
-      for y=0,step*tile_count do
+   for x=0,step*tcount do
+      for y=0,step*tcount do
          if p[x][y] then
-            local p1=maybe(p,x+1,y,tile_count)
-            local p2=maybe(p,x,y+1,tile_count)
-            local p3=maybe(p,x-1,y,tile_count)
-            local p4=maybe(p,x,y-1,tile_count)
+            local p1=maybe(p,x+1,y,tcount)
+            local p2=maybe(p,x,y+1,tcount)
+            local p3=maybe(p,x-1,y,tcount)
+            local p4=maybe(p,x,y-1,tcount)
             if not p1 and not p2 and
                not p3 and not p4 then
                p[x][y]=false
@@ -398,28 +397,28 @@ function despeckle(p)
    end
 end
 
-function thicken(p,cnt)
+function thicken(p)
    local temp={}
    local step=tsize-1
-   for x=0,step*cnt do
+   for x=0,step*tcount do
       temp[x]={}
-      for y=0,step*cnt do
+      for y=0,step*tcount do
          temp[x][y]=p[x][y]
       end
    end
-   for x=step*cnt,0,-1 do
-      for y=step*cnt,0,-1 do
+   for x=step*tcount,0,-1 do
+      for y=step*tcount,0,-1 do
          if temp[x][y] then
-            if maybe(temp,x+1,y,tile_count)!=nil then
+            if maybe(temp,x+1,y,tcount)!=nil then
                p[x+1][y]=true
             end
-            if maybe(temp,x,y+1,tile_count)!=nil then
+            if maybe(temp,x,y+1,tcount)!=nil then
                p[x][y+1]=true
             end
-            if maybe(temp,x-1,y,tile_count)!=nil then
+            if maybe(temp,x-1,y,tcount)!=nil then
                p[x-1][y]=true
             end
-            if maybe(temp,x,y-1,tile_count)!=nil then
+            if maybe(temp,x,y-1,tcount)!=nil then
                p[x][y-1]=true
             end
          end
@@ -429,8 +428,8 @@ end
 
 function printh_terrain()
    local step=tsize-1
-   for x=0,step*tile_count do
-      for y=0,step*tile_count do
+   for x=0,step*tcount do
+      for y=0,step*tcount do
          local t=terrain[x][y]
          if not t then
             t="nil"
