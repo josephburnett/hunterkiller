@@ -5,7 +5,7 @@ play=true
 
 --terrain
 terrain={}
-tdone{}
+tdone={}
 tsize=2^5+1
 tcount=4
 max_delta=0.3
@@ -32,11 +32,11 @@ torps={}
 torp_count=0
 
 function _init()
-   terrain=tile(0,0)
-   p=plane(terrain,elevation)
+   gen_terrain()
 end
 
 function _update()
+   gen_terrain()
    if play then
       update_play()
    else
@@ -108,6 +108,7 @@ function update_pos()
    end
    pos_x+=dx
    pos_y+=dy
+   cursor(pos_x-64,pos_y-64)
 end
 
 function fire()
@@ -268,7 +269,12 @@ function gen_terrain()
    local tactual=(tsize-1)*(tcount-2)
    local tx=flr(pos_x/tactual)*tactual
    local ty=flr(pos_y/tactual)*tactual
-   --generate surrounding tiles
+   local r=flr(128/tactual)*tactual
+   for x=-r,r,tactual do
+      for y=-r,r,tactual do
+         gen_tile(x,y)
+      end
+   end
 end
 
 function gen_tile(x,y)
@@ -387,7 +393,12 @@ end
 
 function corner(t,x,y)
    srand(x*y*salt)
-   t[x][y]=rnd(1)
+   tx=t[x]
+   if tx==nil then
+      tx={}
+      t[x]=tx
+   end
+   tx[y]=rnd(1)
 end
 
 function delta(size,i)
